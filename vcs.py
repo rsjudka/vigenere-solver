@@ -19,14 +19,14 @@ def decrypt(cipher_text):
 
 def find_period(cipher_text):
     frequency_table = OrderedDict()
-    for start in range(len(cipher_text)):
-        for end in range(start,len(cipher_text)):
-            if cipher_text[start:end] in frequency_table:
-                frequency_table[cipher_text[start:end]] += 1
+    for start_idx in range(len(cipher_text)):
+        for end_idx in range(start_idx+2, len(cipher_text)):
+            if cipher_text[start_idx:end_idx] in frequency_table:
+                frequency_table[cipher_text[start_idx:end_idx]] += 1
             else:
-                frequency_table[cipher_text[start:end]] = 1
+                frequency_table[cipher_text[start_idx:end_idx]] = 1
     for string, frequency in frequency_table.items():
-        if frequency > 1 and len(string) > 1:
+        if frequency > 1:
             print(string, frequency)
 
 def main(data):
