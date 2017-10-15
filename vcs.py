@@ -18,17 +18,19 @@ def decrypt(cipher_text):
     return cipher_text
 
 def find_period(cipher_text):
-    frequency_table = OrderedDict()
+    substring_table = {}
     for start_idx in range(len(cipher_text)):
         for end_idx in range(start_idx+2, len(cipher_text)):
-            if cipher_text[start_idx:end_idx] in frequency_table:
-                frequency_table[cipher_text[start_idx:end_idx]] += 1
+            if cipher_text[start_idx:end_idx] in substring_table:
+                substring_table[cipher_text[start_idx:end_idx]][0] += 1
+                substring_table[cipher_text[start_idx:end_idx]][1].append((start_idx, end_idx))
             else:
-                frequency_table[cipher_text[start_idx:end_idx]] = 1
-    for string, frequency in frequency_table.items():
-        if frequency > 1:
-            print(string, frequency)
-
+                substring_table[cipher_text[start_idx:end_idx]] = [1, [(start_idx, end_idx)]]
+    
+    # removes all dictionary entries where the substring only occurs once
+    single_frequency_keys = [key for key in substring_table if substring_table[key][0] == 1]
+    for key in single_frequency_keys: del substring_table[key]
+    
 def main(data):
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
