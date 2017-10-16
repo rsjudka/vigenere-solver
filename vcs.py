@@ -22,15 +22,28 @@ def find_period(cipher_text):
     for start_idx in range(len(cipher_text)):
         for end_idx in range(start_idx+2, len(cipher_text)):
             if cipher_text[start_idx:end_idx] in substring_table:
-                substring_table[cipher_text[start_idx:end_idx]][0] += 1
-                substring_table[cipher_text[start_idx:end_idx]][1].append((start_idx, end_idx))
+                substring_table[cipher_text[start_idx:end_idx]].append(start_idx)
             else:
-                substring_table[cipher_text[start_idx:end_idx]] = [1, [(start_idx, end_idx)]]
+                substring_table[cipher_text[start_idx:end_idx]] = [start_idx]
+    
+    invalid_keys = []    
+    for string, distances in substring_table.items():
+        if len(distances) == 1:
+            invalid_keys.append(string)
+        else:
+            distance = distances[1] - distances[0]
+            for idx in range(1, len(distances)-1):
+                temp_distance = distances[idx+1] - distances[idx]
+                if temp_distance != distance:
+                    invalid_keys.append(string)
+                    break
+            substring_table[string] = (distances, distance)
     
     # removes all dictionary entries where the substring only occurs once
-    single_frequency_keys = [key for key in substring_table if substring_table[key][0] == 1]
-    for key in single_frequency_keys: del substring_table[key]
-    
+    for key in invalid_keys: del substring_table[key]
+    for string, distance in substring_table.items():
+        print(string, distance)
+
 def main(data):
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
