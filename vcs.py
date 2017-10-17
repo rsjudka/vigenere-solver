@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import math
 from collections import OrderedDict
 
 def encrypt(plain_text, key):
@@ -37,12 +38,19 @@ def find_period(cipher_text):
                 if temp_distance != distance:
                     invalid_keys.append(string)
                     break
-            substring_table[string] = (distances, distance)
+            substring_table[string] = distance
     
     # removes all dictionary entries where the substring only occurs once
     for key in invalid_keys: del substring_table[key]
     for string, distance in substring_table.items():
-        print(string, distance)
+        print(string, get_periods(distance))
+
+def get_periods(n):
+    periods = [1]
+    for val in range(2, int(math.sqrt(n))+1):
+        if n % val == 0: periods.extend([val,int(n/val)])
+    periods.append(n)
+    return periods
 
 def main(data):
     parser = argparse.ArgumentParser()
