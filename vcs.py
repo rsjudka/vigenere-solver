@@ -28,7 +28,7 @@ def encrypt(plain_text, key):
     return cipher_text
 
 def decrypt(cipher_text):
-    for period in estimate_period(cipher_text):
+    for period in estimate_periods(cipher_text):
         print(period)
     print('you will soon be able to decrypt this:')
     return cipher_text
@@ -61,13 +61,6 @@ def get_distances(cipher_text):
     for key in invalid_keys: del substring_table[key]
     return substring_table
 
-def get_periods(n):
-    periods = [1]
-    for x in range(2, int(math.sqrt(n))+1):
-        if n % x == 0: periods.extend([x, int(n/x)])
-    periods.append(n)
-    return periods
-
 def get_factors(n): 
     factors = []
     factor = 2
@@ -76,6 +69,13 @@ def get_factors(n):
             factors += [factor] + get_factors(n/factor)
         factor += 1            
     return factors
+
+def get_periods(n):
+    periods = [1]
+    for x in range(2, int(math.sqrt(n))+1):
+        if n % x == 0: periods.extend([x, int(n/x)])
+    periods.append(n)
+    return periods
 
 def calculate_ic(text):
     if len(text) == 0:
@@ -93,7 +93,7 @@ def calculate_ic(text):
         char_frequency += freq * (freq - 1)
     return char_frequency / (len(text) * (len(text) - 1))
 
-def estimate_period(cipher_text):
+def estimate_periods(cipher_text):
     period_frequencies = {}
     factor_frequencies = {}
     distances = get_distances(cipher_text)
@@ -108,7 +108,6 @@ def estimate_period(cipher_text):
                 factor_frequencies[factor] += 1
             else:
                 factor_frequencies[factor] = 1
-    period_frequencies[3] += 100
     factor_frequencies = OrderedDict(sorted(factor_frequencies.items(), key=lambda x: x[1], reverse=True))
     period_frequencies = OrderedDict(sorted(period_frequencies.items(), key=lambda x: x[1], reverse=True))
     ic = calculate_ic(cipher_text)
@@ -118,6 +117,7 @@ def estimate_period(cipher_text):
     for factor in factor_frequencies:
         if factor == period_range:
             periods.append(factor)
+            break
         elif len(period_range) == 2:
             if period_range[1] == 0:
                 if factor > 10:
