@@ -108,12 +108,14 @@ def estimate_period(cipher_text):
                 factor_frequencies[factor] += 1
             else:
                 factor_frequencies[factor] = 1
-    factor_frequencies = sorted(factor_frequencies.items(), key=lambda x: x[1], reverse=True)
+    period_frequencies[3] += 100
+    factor_frequencies = OrderedDict(sorted(factor_frequencies.items(), key=lambda x: x[1], reverse=True))
+    period_frequencies = OrderedDict(sorted(period_frequencies.items(), key=lambda x: x[1], reverse=True))
     ic = calculate_ic(cipher_text)
     period_range = resolve_known_period_ic(ic)
     periods = []
     sub_period = 0
-    for (factor, frequency) in factor_frequencies:
+    for factor in factor_frequencies:
         if factor == period_range:
             periods.append(factor)
         elif len(period_range) == 2:
@@ -130,8 +132,7 @@ def estimate_period(cipher_text):
                             periods.append(temp_period)
                     else:
                         sub_period = factor
-
-    for period in set(periods):
+    for period in [period for period in period_frequencies if period in periods]:
         yield period
 
 def main(data):
