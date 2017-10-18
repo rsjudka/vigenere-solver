@@ -14,10 +14,22 @@ def encrypt(plain_text, key):
     return cipher_text
 
 def decrypt(cipher_text):
+    period_frequencies = {}
+    factor_frequencies = {}
     distances = get_distances(cipher_text)
     for string in sorted(distances, key=len, reverse=True):
-        print(string, get_periods(distances[string]))
-        print(get_factors(distances[string]))
+        for period in get_periods(distances[string]):
+            if period in period_frequencies:
+                period_frequencies[period] += 1
+            else:
+                period_frequencies[period] = 1
+        for factor in get_factors(distances[string]):
+            if factor in factor_frequencies:
+                factor_frequencies[factor] += 1
+            else:
+                factor_frequencies[factor] = 1
+    print(sorted(period_frequencies.items(), key=lambda x: x[1], reverse=True))
+    print(sorted(factor_frequencies.items(), key=lambda x: x[1], reverse=True))
     print(calculate_ic(cipher_text))
     print('you will soon be able to decrypt this:')
     return cipher_text
