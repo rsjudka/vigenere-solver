@@ -9,7 +9,6 @@ from collections import OrderedDict
 alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 known_period_ic = OrderedDict([(.066,1), (.052,2), (.047,3), (.045,4), (.044,5), (.041,10)])
 def resolve_known_period_ic(calculated_ic):
-    print(known_period_ic)
     if calculated_ic in known_period_ic:
         period = known_period_ic[calculated_ic]
     else:
@@ -109,13 +108,31 @@ def estimate_period(cipher_text):
                 factor_frequencies[factor] += 1
             else:
                 factor_frequencies[factor] = 1
-    period_frequencies = sorted(period_frequencies.items(), key=lambda x: x[1], reverse=True)
     factor_frequencies = sorted(factor_frequencies.items(), key=lambda x: x[1], reverse=True)
     ic = calculate_ic(cipher_text)
     period_range = resolve_known_period_ic(ic)
-    print(period_frequencies)
-    print(factor_frequencies)
-    print(period_range)
+    periods = []
+    sub_period = 0
+    for (factor, frequency) in factor_frequencies:
+        if factor == period_range:
+            periods.append(factor)
+        elif len(period_range) == 2:
+            if period_range[1] == 0:
+                if factor > 10:
+                    periods.append(factor)
+            elif factor > period_range[0] and factor < period_range[1]:
+                periods.append(factor)
+            elif factor < period_range[0]:
+                if factor in period_frequencies:
+                    if sub_period:
+                        temp_period = factor * sub_period
+                        if temp_period in period_frequencies:
+                            periods.append(temp_period)
+                    else:
+                        sub_period = factor
+
+    for period in set(periods):
+        yield period
 
 def main(data):
     parser = argparse.ArgumentParser()
