@@ -18,6 +18,8 @@ def decrypt(cipher_text):
     print('you will soon be able to decrypt this:')
     return cipher_text
 
+##### decrpyt helper functions #####
+
 def find_period(cipher_text):
     substring_table = {}
     for start_idx in range(len(cipher_text)):
@@ -42,15 +44,25 @@ def find_period(cipher_text):
     
     # removes all dictionary entries where the substring only occurs once
     for key in invalid_keys: del substring_table[key]
-    for string, distance in substring_table.items():
-        print(string, get_periods(distance))
+    for string in sorted(substring_table, key=len, reverse=True):
+        possible_periods = get_periods(substring_table[string])
+        factors = get_factors(substring_table[string])
 
 def get_periods(n):
     periods = [1]
-    for val in range(2, int(math.sqrt(n))+1):
-        if n % val == 0: periods.extend([val,int(n/val)])
+    for x in range(2, int(math.sqrt(n))+1):
+        if n % x == 0: periods.extend([x, int(n/x)])
     periods.append(n)
     return periods
+
+def get_factors(n): 
+    factors = []
+    factor = 2
+    while not factors and (factor in range(2, int(n)+1)):
+        if (n % factor == 0) and not [x for x in range(2, int(math.sqrt(factor))+1) if n % x == 0]:
+            factors += [factor] + get_factors(n/factor)
+        factor += 1            
+    return factors
 
 def main(data):
     parser = argparse.ArgumentParser()
