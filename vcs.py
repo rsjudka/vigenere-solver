@@ -14,13 +14,17 @@ def encrypt(plain_text, key):
     return cipher_text
 
 def decrypt(cipher_text):
-    period = find_period(cipher_text)
+    distances = get_distances(cipher_text)
+    for string in sorted(distances, key=len, reverse=True):
+        print(string, get_periods(distances[string]))
+        print(get_factors(distances[string]))
+    print(calculate_ic(cipher_text))
     print('you will soon be able to decrypt this:')
     return cipher_text
 
 ##### decrpyt helper functions #####
 
-def find_period(cipher_text):
+def get_distances(cipher_text):
     substring_table = {}
     for start_idx in range(len(cipher_text)):
         for end_idx in range(start_idx+2, len(cipher_text)):
@@ -44,9 +48,7 @@ def find_period(cipher_text):
     
     # removes all dictionary entries where the substring only occurs once
     for key in invalid_keys: del substring_table[key]
-    for string in sorted(substring_table, key=len, reverse=True):
-        possible_periods = get_periods(substring_table[string])
-        factors = get_factors(substring_table[string])
+    return substring_table
 
 def get_periods(n):
     periods = [1]
@@ -63,6 +65,22 @@ def get_factors(n):
             factors += [factor] + get_factors(n/factor)
         factor += 1            
     return factors
+
+def calculate_ic(text):
+    if len(text) == 0:
+        return 0
+    def char_frequencies():
+        freq_dict = {}
+        for char in text:
+            if char in freq_dict:
+                freq_dict[char] += 1
+            else:
+                freq_dict[char] = 1
+        return freq_dict
+    char_frequency = 0
+    for freq in char_frequencies().values():
+        char_frequency += freq * (freq - 1)
+    return char_frequency / (len(text) * (len(text) - 1))
 
 def main(data):
     parser = argparse.ArgumentParser()
