@@ -5,32 +5,32 @@ import argparse
 import math
 from collections import OrderedDict
 
+#alphabet = '0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c'
+alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+known_period_ic = OrderedDict([(.066,1), (.052,2), (.047,3), (.045,4), (.044,5), (.041,10)])
+def resolve_known_period_ic(calculated_ic):
+    print(known_period_ic)
+    if calculated_ic in known_period_ic:
+        period = known_period_ic[calculated_ic]
+    else:
+        period = [0,0]
+        for ic in known_period_ic:
+            if calculated_ic < ic:
+                period[0] = known_period_ic[ic]
+            if calculated_ic > ic:
+                period[1] = known_period_ic[ic]
+                break
+    return period
+
 def encrypt(plain_text, key):
-    # alphabet = '0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c'
-    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     cipher_text = ''
     for idx in range(len(plain_text)):
         cipher_text += alphabet[(alphabet.index(plain_text[idx])+alphabet.index(key[idx%len(key)])) % len(alphabet)]
     return cipher_text
 
 def decrypt(cipher_text):
-    period_frequencies = {}
-    factor_frequencies = {}
-    distances = get_distances(cipher_text)
-    for string in sorted(distances, key=len, reverse=True):
-        for period in get_periods(distances[string]):
-            if period in period_frequencies:
-                period_frequencies[period] += 1
-            else:
-                period_frequencies[period] = 1
-        for factor in get_factors(distances[string]):
-            if factor in factor_frequencies:
-                factor_frequencies[factor] += 1
-            else:
-                factor_frequencies[factor] = 1
-    print(sorted(period_frequencies.items(), key=lambda x: x[1], reverse=True))
-    print(sorted(factor_frequencies.items(), key=lambda x: x[1], reverse=True))
-    print(calculate_ic(cipher_text))
+    for period in estimate_period(cipher_text):
+        print(period)
     print('you will soon be able to decrypt this:')
     return cipher_text
 
@@ -93,6 +93,29 @@ def calculate_ic(text):
     for freq in char_frequencies().values():
         char_frequency += freq * (freq - 1)
     return char_frequency / (len(text) * (len(text) - 1))
+
+def estimate_period(cipher_text):
+    period_frequencies = {}
+    factor_frequencies = {}
+    distances = get_distances(cipher_text)
+    for string in sorted(distances, key=len, reverse=True):
+        for period in get_periods(distances[string]):
+            if period in period_frequencies:
+                period_frequencies[period] += 1
+            else:
+                period_frequencies[period] = 1
+        for factor in get_factors(distances[string]):
+            if factor in factor_frequencies:
+                factor_frequencies[factor] += 1
+            else:
+                factor_frequencies[factor] = 1
+    period_frequencies = sorted(period_frequencies.items(), key=lambda x: x[1], reverse=True)
+    factor_frequencies = sorted(factor_frequencies.items(), key=lambda x: x[1], reverse=True)
+    ic = calculate_ic(cipher_text)
+    period_range = resolve_known_period_ic(ic)
+    print(period_frequencies)
+    print(factor_frequencies)
+    print(period_range)
 
 def main(data):
     parser = argparse.ArgumentParser()
