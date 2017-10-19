@@ -43,7 +43,6 @@ def get_distances(cipher_text):
                 substring_table[cipher_text[start_idx:end_idx]].append(start_idx)
             else:
                 substring_table[cipher_text[start_idx:end_idx]] = [start_idx]
-    
     invalid_keys = []    
     for string, distances in substring_table.items():
         if len(distances) == 1:
@@ -56,12 +55,12 @@ def get_distances(cipher_text):
                     invalid_keys.append(string)
                     break
             substring_table[string] = distance
-    
+
     # removes all dictionary entries where the substring only occurs once
     for key in invalid_keys: del substring_table[key]
     return substring_table
 
-def get_factors(n): 
+def get_factors(n):
     factors = []
     factor = 2
     while not factors and (factor in range(2, int(n)+1)):
@@ -90,13 +89,15 @@ def calculate_ic(text):
         return freq_dict
     char_frequency = 0
     for freq in char_frequencies().values():
-        char_frequency += freq * (freq - 1)
-    return char_frequency / (len(text) * (len(text) - 1))
+        char_frequency += freq * (freq-1)
+    return char_frequency / (len(text)*(len(text)-1))
 
 def estimate_periods(cipher_text):
+    distances = get_distances(cipher_text)
+    if  not distances:
+        exit("no patterns found; could not decrypt text")
     period_frequencies = {}
     factor_frequencies = {}
-    distances = get_distances(cipher_text)
     for string in sorted(distances, key=len, reverse=True):
         for period in get_periods(distances[string]):
             if period in period_frequencies:
@@ -118,7 +119,7 @@ def estimate_periods(cipher_text):
         if factor == period_range:
             periods.append(factor)
             break
-        elif len(period_range) == 2:
+        elif len(period_range) == 2 and period_range[0] != 0:
             if period_range[1] == 0:
                 if factor > 10:
                     periods.append(factor)
@@ -132,6 +133,8 @@ def estimate_periods(cipher_text):
                             periods.append(temp_period)
                     else:
                         sub_period = factor
+        else:
+            periods.append(factor)
     for period in [period for period in period_frequencies if period in periods]:
         yield period
 
