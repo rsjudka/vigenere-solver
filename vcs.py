@@ -7,8 +7,14 @@ from collections import OrderedDict
 
 #alphabet = '0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c'
 alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+alphabet_frequencies = OrderedDict(zip(alphabet,
+                        [.0817,.0149,.0278,.0425,.1270,.0223,.0202,
+                         .0609,.0697,.0015,.0077,.0402,.0241,.0675,
+                         .0751,.0193,.0009,.0599,.0633,.0906,.0276,
+                         .0098,.0236,.0015,.0197,.0007]))
+
 known_period_ic = OrderedDict([(.066,1), (.052,2), (.047,3), (.045,4), (.044,5), (.041,10)])
-def resolve_known_period_ic(calculated_ic):
+def resolve_ic(calculated_ic):
     if calculated_ic in known_period_ic:
         period = known_period_ic[calculated_ic]
     else:
@@ -30,12 +36,26 @@ def encrypt(plain_text, key):
 def decrypt(cipher_text):
     for period in estimate_periods(cipher_text):
         alphabets = [''] * period
-        idx = 0
+        decrypted_alphabets = [''] * period
+        idx_c = 0
         for char in cipher_text:
-            alphabets[idx % (period)] += char
-            idx += 1
-        for _ in alphabets:
-            print(_)
+            alphabets[idx_c % (period)] += char
+            idx_c += 1
+        idx_d = 0
+        for line in alphabets:
+            for decrypted_line in caesar_decrypt(line):
+                decrypted_alphabets[idx_d % (period)] = decrypted_line[1]
+                break
+            idx_d += 1
+        text = ''
+        for x in range(max([len(alphabet) for alphabet in decrypted_alphabets])):
+            for y in range(period):
+                try:
+                    text += decrypted_alphabets[y][x]
+                except IndexError:
+                    pass
+        return text
+
 
 ##### decrpyt helper functions #####
 
@@ -116,7 +136,7 @@ def estimate_periods(cipher_text):
     factor_frequencies = OrderedDict(sorted(factor_frequencies.items(), key=lambda x: x[1], reverse=True))
     period_frequencies = OrderedDict(sorted(period_frequencies.items(), key=lambda x: x[1], reverse=True))
     ic = calculate_ic(cipher_text)
-    period_range = resolve_known_period_ic(ic)
+    period_range = resolve_ic(ic)
     periods = []
     sub_period = 0
     for factor in factor_frequencies:
@@ -127,7 +147,7 @@ def estimate_periods(cipher_text):
             if period_range[1] == 0:
                 if factor > 10:
                     periods.append(factor)
-            elif factor > period_range[0] and factor < period_range[1]:
+            elif factor >= period_range[0] and factor <= period_range[1]:
                 periods.append(factor)
             elif factor < period_range[0]:
                 if factor in period_frequencies:
@@ -141,6 +161,20 @@ def estimate_periods(cipher_text):
             periods.append(factor)
     for period in [period for period in period_frequencies if period in periods]:
         yield period
+
+def caesar_decrypt(line):
+    translations = []
+    for x in range(len(alphabet)):
+        translations.append(str.maketrans(alphabet, alphabet[x:]+alphabet[:x]))
+    
+    decrpyt_attempts = []
+    for translation in translations:
+        translated_line = line.translate(translation)
+        translation_score = sum(alphabet_frequencies[char] for char in translated_line)
+        decrpyt_attempts.append((translation_score, translated_line))
+
+    for decrypt_attempt in sorted(decrpyt_attempts, reverse=True):
+        yield decrypt_attempt
 
 def main(data):
     parser = argparse.ArgumentParser()
