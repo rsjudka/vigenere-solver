@@ -29,9 +29,13 @@ def encrypt(plain_text, key):
 
 def decrypt(cipher_text):
     for period in estimate_periods(cipher_text):
-        print(period)
-    print('you will soon be able to decrypt this:')
-    return cipher_text
+        alphabets = [''] * period
+        idx = 0
+        for char in cipher_text:
+            alphabets[idx % (period)] += char
+            idx += 1
+        for _ in alphabets:
+            print(_)
 
 ##### decrpyt helper functions #####
 
