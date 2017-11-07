@@ -3,6 +3,7 @@
 import sys
 import argparse
 import math
+import itertools as it
 from collections import OrderedDict
 
 #alphabet = '0123456789AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c'
@@ -36,24 +37,25 @@ def encrypt(plain_text, key):
 def decrypt(cipher_text):
     for period in estimate_periods(cipher_text):
         alphabets = [''] * period
+        decrypted_lines = OrderedDict([(x, []) for x in range(period)])
         decrypted_alphabets = [''] * period
         idx_c = 0
         for char in cipher_text:
-            alphabets[idx_c % (period)] += char
+            alphabets[idx_c % period] += char
             idx_c += 1
         idx_d = 0
         for line in alphabets:
             for decrypted_line in caesar_decrypt(line):
-                decrypted_alphabets[idx_d % (period)] = decrypted_line[1]
-                break
+                decrypted_lines[idx_d % period].append(decrypted_line[1])
             idx_d += 1
+        candidate_lines = it.product(*(decrypted_lines[x] for x in range(period)))
         text = ''
-        for x in range(max([len(alphabet) for alphabet in decrypted_alphabets])):
-            for y in range(period):
-                try:
-                    text += decrypted_alphabets[y][x]
-                except IndexError:
-                    pass
+        # for x in range(max([len(alphabet) for alphabet in decrypted_alphabets])):
+        #     for y in range(period):
+        #         try:
+        #             text += decrypted_alphabets[y][x]
+        #         except IndexError:
+        #             pass
         return text
 
 
@@ -173,7 +175,7 @@ def caesar_decrypt(line):
         translation_score = sum(alphabet_frequencies[char] for char in translated_line)
         decrpyt_attempts.append((translation_score, translated_line))
 
-    for decrypt_attempt in sorted(decrpyt_attempts, reverse=True):
+    for decrypt_attempt in sorted(decrpyt_attempts, reverse=True)[:3]:
         yield decrypt_attempt
 
 def main(data):
