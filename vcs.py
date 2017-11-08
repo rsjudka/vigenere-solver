@@ -3,6 +3,7 @@
 import sys
 import argparse
 import math
+import json
 import itertools as it
 from collections import OrderedDict
 
@@ -13,6 +14,8 @@ alphabet_frequencies = OrderedDict(zip(alphabet,
                          .0609,.0697,.0015,.0077,.0402,.0241,.0675,
                          .0751,.0193,.0009,.0599,.0633,.0906,.0276,
                          .0098,.0236,.0015,.0197,.0007]))
+
+words = json.loads(open('words_alpha.json').read())
 
 known_period_ic = OrderedDict([(.066,1), (.052,2), (.047,3), (.045,4), (.044,5), (.041,10)])
 def resolve_ic(calculated_ic):
