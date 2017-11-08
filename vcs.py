@@ -62,8 +62,21 @@ def decrypt(cipher_text):
                     except IndexError:
                         pass
             decrypted_alphabets.append(text)
-        return text
-
+        plain_text = []
+        max_num_of_words = 0
+        for decrypted_text in decrypted_alphabets:
+            num_of_words = 0
+            for start_idx in range(len(decrypted_text)):
+                for end_idx in range(start_idx+1, len(decrypted_text)):
+                    if end_idx - start_idx <= longest_word:
+                        if decrypted_text[start_idx:end_idx].lower() in words:
+                            num_of_words += 1
+            if num_of_words > max_num_of_words:
+                max_num_of_words = num_of_words
+                plain_text = [decrypted_text]
+            elif num_of_words == max_num_of_words:
+                plain_text.append([decrypted_text])
+        yield plain_text
 
 ##### decrpyt helper functions #####
 
@@ -181,7 +194,7 @@ def caesar_decrypt(line):
         translation_score = sum(alphabet_frequencies[char] for char in translated_line)
         decrpyt_attempts.append((translation_score, translated_line))
 
-    for decrypt_attempt in sorted(decrpyt_attempts, reverse=True)[:3]:
+    for decrypt_attempt in sorted(decrpyt_attempts, reverse=True)[:5]:
         yield decrypt_attempt
 
 def main(data):
@@ -198,8 +211,9 @@ def main(data):
         print(cipher_text)
     elif args.d:
         cipher_text = ''.join(data.readlines()).rstrip()
-        plain_text = decrypt(cipher_text)
-        print(plain_text)
+        for plain_texts in decrypt(cipher_text):
+            for plain_text in plain_texts:
+                print(plain_text)
     else:
         print('usage: vcs.py [-h] [-d | -e E]')
 
