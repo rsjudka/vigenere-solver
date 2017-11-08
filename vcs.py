@@ -16,6 +16,7 @@ alphabet_frequencies = OrderedDict(zip(alphabet,
                          .0098,.0236,.0015,.0197,.0007]))
 
 words = json.loads(open('words_alpha.json').read())
+longest_word = 31
 
 known_period_ic = OrderedDict([(.066,1), (.052,2), (.047,3), (.045,4), (.044,5), (.041,10)])
 def resolve_ic(calculated_ic):
@@ -41,7 +42,7 @@ def decrypt(cipher_text):
     for period in estimate_periods(cipher_text):
         alphabets = [''] * period
         decrypted_lines = OrderedDict([(x, []) for x in range(period)])
-        decrypted_alphabets = [''] * period
+        decrypted_alphabets = []
         idx_c = 0
         for char in cipher_text:
             alphabets[idx_c % period] += char
@@ -52,13 +53,15 @@ def decrypt(cipher_text):
                 decrypted_lines[idx_d % period].append(decrypted_line[1])
             idx_d += 1
         candidate_lines = it.product(*(decrypted_lines[x] for x in range(period)))
-        text = ''
-        # for x in range(max([len(alphabet) for alphabet in decrypted_alphabets])):
-        #     for y in range(period):
-        #         try:
-        #             text += decrypted_alphabets[y][x]
-        #         except IndexError:
-        #             pass
+        for candidate in candidate_lines:
+            text = ''
+            for x in range(max([len(line) for line in candidate])):
+                for y in range(period):
+                    try:
+                        text += candidate[y][x]
+                    except IndexError:
+                        pass
+            decrypted_alphabets.append(text)
         return text
 
 
